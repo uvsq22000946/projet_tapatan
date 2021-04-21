@@ -32,6 +32,7 @@ nombre_de_pion = 0
 ###############################
 # Fonctions
 
+
 def affiche_terrain():
     """Affiche le terrain"""
     canvas.create_line((100, 100), (100, 400), fill="white")
@@ -49,6 +50,7 @@ def conversion(x, y):
     y = (y - 75) // 150
     return x, y
 
+
 def tableau_terrain():
     """Genere le tableau correspondant au terrain"""
     for x in range(3):
@@ -57,7 +59,17 @@ def tableau_terrain():
             ligne.append([-1])
         tableau.append(ligne)
 
-    
+
+def clic(event):
+    """Si il y a moins de 6 pions ajoute un 
+    pion sur la case cibler sinon deplace un pion"""
+    i, j = conversion(event.x, event.y)
+    if nombre_de_pion <= 5:
+        if tableau[i][j][0] != -1:
+            pass
+        else:
+            placer_pion(event)
+
 
 def placer_pion(event):
     """Si le joueur actuel a moins de trois pion, 
@@ -66,41 +78,56 @@ def placer_pion(event):
     i, j = conversion(event.x, event.y)
     x, y = i * 150 + 100, j * 150 + 100
     print(tableau)
-    if nombre_de_pion <= 0:
-        nombre_de_pion += 1
-        couleur = first_player()
+    nombre_de_pion += 1
+    if couleur == "blue":
         tableau[i][j].append(canvas.create_oval((x - 25, y - 25), (x + 25, y + 25), fill=couleur))
-        if couleur == "blue":
-            tableau[i][j][0] = 1
-        else:
-            tableau[i][j][0] = 2
+        tableau[i][j][0] = 2
+        couleur = "red"
+    else:
+        tableau[i][j].append(canvas.create_oval((x - 25, y - 25), (x + 25, y + 25), fill=couleur))
+        tableau[i][j][0] = 1
+        couleur = "blue"
 
-    elif nombre_de_pion <= 5:
-        nombre_de_pion += 1
-        if couleur == "blue":
-            couleur = "red"
-            tableau[i][j].append(canvas.create_oval((x - 25, y - 25), (x + 25, y + 25), fill=couleur))
-        else:
-            couleur = "blue"
-            tableau[i][j].append(canvas.create_oval((x - 25, y - 25), (x + 25, y + 25), fill=couleur))
+
+def deplacer_pion(event):
+    """Si il y a deja six pions, la phase 
+    de deplacement commance"""
+
+def joueur1_rouge():
+    """Definie le joueur rouge comme premier joueur"""
+    global couleur
+    couleur = "red"
+    fenetre_de_bienvenue.destroy()
+
+def joueur1_bleu():
+    """Definie le joueur rouge comme premier joueur"""
+    global couleur
+    couleur = "blue"
+    fenetre_de_bienvenue.destroy()
 
 def first_player():
-    choix = rd.randint(1, 2)
-    if choix == 1:
-        return "blue"
-    if choix == 2:
-        return "red"
+    """Choisie le premier joueur"""
+    global fenetre_de_bienvenue
+    fenetre_de_bienvenue = tk.Toplevel(racine, bg="black")
+    label = tk.Label(fenetre_de_bienvenue, text="Bienvenue sur Tapatan \n Choisissez le joueur 1", font=("Helvatica, 20"), bg="black", fg="white")
+    boutton_rouge = tk.Button(fenetre_de_bienvenue, text="Rouge", font=("helvatica, 25"), bg="black", fg="red", command=joueur1_rouge)
+    boutton_bleu = tk.Button(fenetre_de_bienvenue, text="Bleu", font=("helvatica, 25"), bg="black", fg="blue", command=joueur1_bleu)
+
+    label.grid(row= 0)
+    boutton_rouge.grid(row= 1)
+    boutton_bleu.grid(row=2)
 
 ###############################
 # Programme principal
 
 racine = tk.Tk()
 
+first_player()
 canvas = tk.Canvas(racine, height=HEIGHT, width=WIDTH, bg="black")
 affiche_terrain()
 
 canvas.grid()
 tableau_terrain()
 print(tableau)
-canvas.bind('<Button-1>', placer_pion)
+canvas.bind('<Button-1>', clic)
 racine.mainloop()
