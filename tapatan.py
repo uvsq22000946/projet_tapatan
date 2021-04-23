@@ -71,6 +71,9 @@ def clic(event):
             placer_pion(event)
 
 
+def second_clic(event):
+    """Sauvegarde les coordonnees du clic precendant"""
+
 def placer_pion(event):
     """Si le joueur actuel a moins de trois pion, 
     place un nouveau pion de sa couleur"""
@@ -91,7 +94,14 @@ def placer_pion(event):
 
 def deplacer_pion(event):
     """Si il y a deja six pions, la phase 
-    de deplacement commance"""
+    de deplacement commence"""
+    i, j = conversion(event.x, event.y)
+    x, y = i * 150 + 100, j * 150 + 100
+    if tableau[i][j][0] == -1:
+        pass
+    else:
+        pass
+        
 
 def joueur1_rouge():
     """Definie le joueur rouge comme premier joueur"""
