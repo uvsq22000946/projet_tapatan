@@ -28,6 +28,7 @@ WIDTH = 500
 
 tableau = []
 nombre_de_pion = 0
+first_clic = []
 
 ###############################
 # Fonctions
@@ -63,16 +64,28 @@ def tableau_terrain():
 def clic(event):
     """Si il y a moins de 6 pions ajoute un 
     pion sur la case cibler sinon deplace un pion"""
+    global first_clic
     i, j = conversion(event.x, event.y)
     if nombre_de_pion <= 5:
         if tableau[i][j][0] != -1:
             pass
         else:
             placer_pion(event)
+    else:
+        if tableau[i][j][0] == -1:
+            if first_clic == []:
+                pass
+            else:
+                deplacer_pion(first_clic[0], first_clic[1], i, j)
+                first_clic = []
+        else:
+            if first_clic == []:
+                first_clic.append(i)
+                first_clic.append(j)
+            else:
+                pass
+    checking_colonne()
 
-
-def second_clic(event):
-    """Sauvegarde les coordonnees du clic precendant"""
 
 def placer_pion(event):
     """Si le joueur actuel a moins de trois pion, 
@@ -80,8 +93,6 @@ def placer_pion(event):
     global nombre_de_pion, couleur
     i, j = conversion(event.x, event.y)
     x, y = i * 150 + 100, j * 150 + 100
-    print(tableau)
-    nombre_de_pion += 1
     if couleur == "blue":
         tableau[i][j].append(canvas.create_oval((x - 25, y - 25), (x + 25, y + 25), fill=couleur))
         tableau[i][j][0] = 2
@@ -90,18 +101,41 @@ def placer_pion(event):
         tableau[i][j].append(canvas.create_oval((x - 25, y - 25), (x + 25, y + 25), fill=couleur))
         tableau[i][j][0] = 1
         couleur = "blue"
+    nombre_de_pion += 1
 
 
-def deplacer_pion(event):
+def deplacer_pion(i1, j1, i2, j2):
     """Si il y a deja six pions, la phase 
     de deplacement commence"""
-    i, j = conversion(event.x, event.y)
-    x, y = i * 150 + 100, j * 150 + 100
-    if tableau[i][j][0] == -1:
-        pass
+    global couleur
+    x, y = i2 * 150 + 100, j2 * 150 + 100
+    canvas.delete(tableau[i1][j1][1])
+    if tableau[i1][j1][0] == 1:
+        tableau[i2][j2][0] = 1
+        couleur = "red"
     else:
-        pass
-        
+        tableau[i2][j2][0] = 2
+        couleur = "blue"
+    tableau[i1][j1][0] = -1
+    tableau[i1][j1] = tableau[i1][j1][:-1]
+    tableau[i2][j2].append(canvas.create_oval((x - 25, y - 25), (x + 25, y + 25), fill=couleur))
+
+
+def checking_colonne():
+    """Si trois pions sont alligner verticalement,
+    la partie se termine"""
+    for x in range(3):
+        win = 0
+        for y in range(3):
+            win += tableau[x][y][0]
+        if win == 3:
+            victoire("rouge")
+        elif win == 6:
+            victoire("blue")
+
+def victoire(couleur):
+    print("Le joueur", couleur,"a gagner")
+
 
 def joueur1_rouge():
     """Definie le joueur rouge comme premier joueur"""
@@ -138,6 +172,5 @@ affiche_terrain()
 
 canvas.grid()
 tableau_terrain()
-print(tableau)
 canvas.bind('<Button-1>', clic)
 racine.mainloop()
