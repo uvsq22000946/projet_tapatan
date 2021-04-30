@@ -110,6 +110,10 @@ def placer_pion(i, j):
         couleur = "blue"
         label_joueur.config(text="Joueur bleu", fg=couleur)
     nombre_de_pion += 1
+    checking_colonne()
+    checking_ligne()
+    checking_diagonal()
+    checking_diagonal_inverse()
 
 
 def deplacer_pion(i1, j1, i2, j2):
@@ -252,22 +256,56 @@ def first_player():
 
 def partie_contre_IA():
     """Lance une partie contre l'IA"""
-    pass
+    canvas.unbind('<Button-1>')
+    canvas.bind('<Button-1>', clic_IA)
+    joueur1_rouge()
+
+
+def clic_IA(event):
+    clic(event)
+    if nombre_de_pion <= 5:
+        placement()
 
 
 def placement():
     """Place des pions aléatoirement sauf
     si l'IA peut gagner ou perdre"""
-    jouer = False
-    while jouer != True:
-        x, y = rd.randint(1, 3), rd.randint(1, 3)
-        if tableau[x][y] == -1:
-            placer_pion(x, y)
-            jouer = True
+    disponible = []
+    for x in range(0, 3):
+        for y in range(0, 3):
+            if tableau[x][y][0] == -1:
+                disponible.append([x, y])
+    for liste in disponible:
+        match = checking_IA(liste)
+        if match is True:
+            placer_pion(liste[0], liste[1])
+            return
+    r = rd.randint(0, len(disponible) - 1)
+    i, j = disponible[r][0], disponible[r][1]
+    placer_pion(i, j)
 
+
+def checking_IA(liste):
+    ligne = 0
+    colonne = 0
+    diagonal = 0
+    diagonal_inverse = 0
+    for x in range(3):
+        ligne += tableau[liste[0]][x][0]
+        colonne += tableau[x][liste[1]][0]
+        diagonal += tableau[x][x][0]
+    for y in range(1, 4):
+        diagonal_inverse += tableau[-x][x][0]
+    if ligne + 2 == 3 or colonne + 2 == 3:
+        return True
+    elif diagonal_inverse + 2 == 3 or diagonal + 2 == 3:
+        return True
+    else:
+        return False
 
 ###############################
 # Programme principal
+
 
 racine = tk.Tk()
 racine.config(bg="black")
