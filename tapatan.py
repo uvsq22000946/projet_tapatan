@@ -29,6 +29,7 @@ WIDTH = 500
 tableau = []
 nombre_de_pion = 0
 first_clic = []
+compteur_objet = []
 
 ###############################
 # Fonctions
@@ -36,14 +37,22 @@ first_clic = []
 
 def affiche_terrain():
     """Affiche le terrain"""
-    canvas.create_line((100, 100), (100, 400), fill="white")
-    canvas.create_line((100, 100), (400, 100), fill="white")
-    canvas.create_line((100, 100), (400, 400), fill="white")
-    canvas.create_line((400, 400), (100, 400), fill="white")
-    canvas.create_line((400, 400), (400, 100), fill="white")
-    canvas.create_line((100, 400), (400, 100), fill="white")
-    canvas.create_line((100, 250), (400, 250), fill="white")
-    canvas.create_line((250, 100), (250, 400), fill="white")
+    compteur_objet.append(canvas.create_line((100, 100), (100, 400),
+                          fill="white"))
+    compteur_objet.append(canvas.create_line((100, 100), (400, 100),
+                          fill="white"))
+    compteur_objet.append(canvas.create_line((100, 100), (400, 400),
+                          fill="white"))
+    compteur_objet.append(canvas.create_line((400, 400), (100, 400),
+                          fill="white"))
+    compteur_objet.append(canvas.create_line((400, 400), (400, 100),
+                          fill="white"))
+    compteur_objet.append(canvas.create_line((100, 400), (400, 100),
+                          fill="white"))
+    compteur_objet.append(canvas.create_line((100, 250), (400, 250),
+                          fill="white"))
+    compteur_objet.append(canvas.create_line((250, 100), (250, 400),
+                          fill="white"))
 
 
 def conversion(x, y):
@@ -100,6 +109,7 @@ def placer_pion(i, j):
                                                 (x + 25, y + 25),
                                                 fill=couleur))
         tableau[i][j][0] = 2
+        compteur_objet.append(tableau[i][j][1])
         couleur = "red"
         label_joueur.config(text="Joueur rouge", fg=couleur)
     else:
@@ -108,6 +118,7 @@ def placer_pion(i, j):
                                                 fill=couleur))
         tableau[i][j][0] = 1
         couleur = "blue"
+        compteur_objet.append(tableau[i][j][1])
         label_joueur.config(text="Joueur bleu", fg=couleur)
     nombre_de_pion += 1
     checking_colonne()
@@ -134,6 +145,7 @@ def deplacer_pion(i1, j1, i2, j2):
     tableau[i1][j1] = tableau[i1][j1][:-1]
     tableau[i2][j2].append(canvas.create_oval((x - 25, y - 25),
                                               (x + 25, y + 25), fill=couleur))
+    compteur_objet.append(tableau[i2][j2][1])
 
 
 def checking_colonne():
@@ -210,7 +222,7 @@ def joueur1_rouge():
     label_joueur = tk.Label(racine, text="Joueur rouge",
                             font=("Helvatica", "30"), bg="black", fg=couleur)
 
-    label_joueur.grid(column=1, row=0)
+    label_joueur.grid(column=2, row=0)
     affiche_terrain()
 
 
@@ -222,7 +234,7 @@ def joueur1_bleu():
     label_joueur = tk.Label(racine, text="Joueur bleu",
                             font=("Helvatica", "30"), bg="black", fg=couleur)
 
-    label_joueur.grid(column=1, row=0)
+    label_joueur.grid(column=2, row=0)
     affiche_terrain()
 
 
@@ -276,7 +288,8 @@ def placement():
             if tableau[x][y][0] == -1:
                 disponible.append([x, y])
     for liste in disponible:
-        match = checking_IA(liste)
+        w, x, y, z = checking_IA(liste)
+        match = placement_de_IA(w, x, y, z)
         if match is True:
             placer_pion(liste[0], liste[1])
             return
@@ -290,18 +303,81 @@ def checking_IA(liste):
     colonne = 0
     diagonal = 0
     diagonal_inverse = 0
-    for x in range(3):
-        ligne += tableau[liste[0]][x][0]
-        colonne += tableau[x][liste[1]][0]
-        diagonal += tableau[x][x][0]
-    for y in range(1, 4):
-        diagonal_inverse += tableau[-x][x][0]
+    for x in range(1, 4):
+        ligne += tableau[liste[0]][x - 1][0]
+        colonne += tableau[x - 1][liste[1]][0]
+        diagonal += tableau[x - 1][x - 1][0]
+        diagonal_inverse += tableau[-x][x - 1][0]
+    return ligne, colonne, diagonal, diagonal_inverse
+
+
+def placement_de_IA(w, x, y, z):
+    """Place les pions de facon a eviter de perdre la partie"""
+    ligne, colonne, diagonal, diagonal_inverse = w, x, y, z
     if ligne + 2 == 3 or colonne + 2 == 3:
         return True
     elif diagonal_inverse + 2 == 3 or diagonal + 2 == 3:
         return True
     else:
         return False
+
+
+def deplacement_de_IA():
+    """Si il y a un coup gagnant a faire, IA le fait."""
+    w, x, y, z = checking_IA()
+
+###############################
+# Sauvegarde
+
+
+def savegarde():
+    """Sauvegarde la disposition du terrain"""
+    fic = open("save", "w")
+    for x in range(3):
+        for y in range(3):
+            caractere = str(tableau[x][y][0])
+            fic.write(caractere + "\n")
+    fic.close()
+
+
+def charger():
+    """Charge la disposition du terrain"""
+    global tableau
+    fic = open("save", "r")
+    delete_all()
+    affiche_terrain()
+    tableau = []
+    tempo = []
+    for row in fic:
+        tempo.append(int(row))
+    for x in range(0, 9, 3):
+        ligne = []
+        for y in range(3):
+            unit = []
+            unit.append(tempo[x + y])
+            ligne.append(unit)
+        tableau.append(ligne)
+    recreation()
+    fic.close()
+
+
+def recreation():
+    """Recrée le terrain apres le chargement"""
+    for i in range(3):
+        for j in range(3):
+            x, y = i * 150 + 100, j * 150 + 100
+            if tableau[i][j][0] == 1:
+                tableau[i][j].append(canvas.create_oval(x - 25, y - 25, x + 25, y + 25, fill="red"))
+                compteur_objet.append(tableau[i][j][1])
+            elif tableau[i][j][0] == 2:
+                tableau[i][j].append(canvas.create_oval(x - 25, y - 25, x + 25, y + 25, fill="blue"))
+                compteur_objet.append(tableau[i][j][1])
+
+
+def delete_all():
+    """Supprime tout les elements du terrain"""
+    for items in range(len(compteur_objet)):
+        canvas.delete(items)
 
 ###############################
 # Programme principal
@@ -312,9 +388,13 @@ racine.config(bg="black")
 
 first_player()
 canvas = tk.Canvas(racine, height=HEIGHT, width=WIDTH, bg="black")
+boutton_save = tk.Button(racine, text="Sauvegarder", font=("Helvatica", "20"), bg="black", fg="White", command=savegarde)
+boutton_charger = tk.Button(racine, text="Charger", font=("Helvatica", "20"), bg="black", fg="white", command=charger)
 affiche_terrain()
 
-canvas.grid()
+canvas.grid(column=0, row=0, columnspan=2)
+boutton_save.grid(column=0, row=2)
+boutton_charger.grid(column=1, row=2)
 tableau_terrain()
 canvas.bind('<Button-1>', clic)
 racine.mainloop()
