@@ -9,6 +9,31 @@
 #
 # https://github.com/uvsq22000946/projet_tapatan
 ###############################
+# Fonctionnement :
+#
+# Choisissez le premier joueur si vous jouer contre
+# un autre humain sinon choisissez partie contre IA
+# dans la fentetre de bienvenue qui a tendance a rester
+# en arriere plan.
+# Lorsque vous jouer contre l'IA, vous etes automatiquement
+# le joueur 1 et rouge. Durant la partie vous devrez cliquez
+# sur les noeuds pour placer 3 pions puis les deplacer
+# de la meme maniere. Le reste respecte les ragles du
+# Tapatan.
+#
+# But :
+#
+# Aligner trois pions de sa couleur. Vous avez
+# 3 pions pour ce faire. Une fois placer vous devez
+# les deplacer en suivant les lignes blanches
+# Vous ne pouvez pas passer votre tour
+#
+# Specificiter :
+#
+# Pour des raisons pratique, le jeu se deroule
+# comme sur un vrai plateau. Il est donc possible
+# de deplacer les pions meme sur des cases pourtant
+# inaccessible.
 
 ###############################
 # Import des librairies
@@ -279,14 +304,23 @@ def clic_IA(event):
         placement()
 
 
-def placement():
-    """Place des pions aléatoirement sauf
-    si l'IA peut gagner ou perdre"""
+def disponiblite():
+    """Renvoie une liste contenent des
+    listes d'elements [x, y] etant les
+    coordonnées des places disponibles
+    sur le plateau"""
     disponible = []
     for x in range(0, 3):
         for y in range(0, 3):
             if tableau[x][y][0] == -1:
                 disponible.append([x, y])
+    return disponible
+
+
+def placement():
+    """Place des pions aléatoirement sauf
+    si l'IA peut gagner ou perdre"""
+    disponible = disponiblite()
     for liste in disponible:
         w, x, y, z = checking_IA(liste)
         match = placement_de_IA(w, x, y, z)
@@ -324,7 +358,9 @@ def placement_de_IA(w, x, y, z):
 
 def deplacement_de_IA():
     """Si il y a un coup gagnant a faire, IA le fait."""
-    w, x, y, z = checking_IA()
+    for x in range(3):
+        for y in range(3):
+            pass
 
 ###############################
 # Sauvegarde
@@ -367,10 +403,14 @@ def recreation():
         for j in range(3):
             x, y = i * 150 + 100, j * 150 + 100
             if tableau[i][j][0] == 1:
-                tableau[i][j].append(canvas.create_oval(x - 25, y - 25, x + 25, y + 25, fill="red"))
+                tableau[i][j].append(canvas.create_oval(x - 25, y - 25,
+                                                        x + 25, y + 25,
+                                                        fill="red"))
                 compteur_objet.append(tableau[i][j][1])
             elif tableau[i][j][0] == 2:
-                tableau[i][j].append(canvas.create_oval(x - 25, y - 25, x + 25, y + 25, fill="blue"))
+                tableau[i][j].append(canvas.create_oval(x - 25, y - 25,
+                                                        x + 25, y + 25,
+                                                        fill="blue"))
                 compteur_objet.append(tableau[i][j][1])
 
 
@@ -388,8 +428,10 @@ racine.config(bg="black")
 
 first_player()
 canvas = tk.Canvas(racine, height=HEIGHT, width=WIDTH, bg="black")
-boutton_save = tk.Button(racine, text="Sauvegarder", font=("Helvatica", "20"), bg="black", fg="White", command=savegarde)
-boutton_charger = tk.Button(racine, text="Charger", font=("Helvatica", "20"), bg="black", fg="white", command=charger)
+boutton_save = tk.Button(racine, text="Sauvegarder", font=("Helvatica", "20"),
+                         bg="black", fg="White", command=savegarde)
+boutton_charger = tk.Button(racine, text="Charger", font=("Helvatica", "20"),
+                            bg="black", fg="white", command=charger)
 affiche_terrain()
 
 canvas.grid(column=0, row=0, columnspan=2)
